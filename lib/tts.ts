@@ -1,13 +1,27 @@
 export function speak(text: string): void {
-  if (typeof window === 'undefined' || !window.speechSynthesis) return
-  window.speechSynthesis.cancel()
-  const utterance = new SpeechSynthesisUtterance(text)
-  utterance.lang = 'en-US'
-  utterance.rate = 0.9
-  window.speechSynthesis.speak(utterance)
+  if (typeof window === 'undefined' || !window.speechSynthesis) return;
+
+  const synth = window.speechSynthesis;
+  synth.cancel();
+
+  const voices = synth.getVoices();
+
+  // Try to find a high-quality voice
+  const voice =
+    voices.find((v) => v.name.includes('Google')) ||
+    voices.find((v) => v.name.includes('Samantha')) || // Safari
+    voices.find((v) => v.lang === 'en-US');
+
+  const utterance = new SpeechSynthesisUtterance(text);
+  utterance.voice = voice || null;
+  utterance.lang = 'en-US';
+  utterance.rate = 0.95;
+  utterance.pitch = 1;
+
+  synth.speak(utterance);
 }
 
 export function stopSpeaking(): void {
-  if (typeof window === 'undefined' || !window.speechSynthesis) return
-  window.speechSynthesis.cancel()
+  if (typeof window === 'undefined' || !window.speechSynthesis) return;
+  window.speechSynthesis.cancel();
 }

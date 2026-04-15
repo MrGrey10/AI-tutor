@@ -42,7 +42,7 @@ export function ChatScreen({ initialMessage, onEndSession }: ChatScreenProps) {
     setIsLoading(true);
 
     try {
-      const res = await fetch('/api/chat', {
+      const res = await fetch('/netlify/functions/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ messages, userText: transcript })
@@ -94,7 +94,7 @@ export function ChatScreen({ initialMessage, onEndSession }: ChatScreenProps) {
 
       {/* Messages */}
       <div className='flex-1 overflow-y-auto px-4 py-4'>
-        {messages.map((msg, i) => (
+        {messages?.map((msg, i) => (
           <ChatBubble key={i} message={msg} />
         ))}
         {isLoading && (

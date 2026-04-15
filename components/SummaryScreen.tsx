@@ -18,7 +18,7 @@ export function SummaryScreen({ messages, onNewSession }: SummaryScreenProps) {
   useEffect(() => {
     const controller = new AbortController();
 
-    fetch('/netlify/functions/chat', {
+    fetch('/.netlify/functions/chat', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ messages, userText: SUMMARY_PROMPT }),

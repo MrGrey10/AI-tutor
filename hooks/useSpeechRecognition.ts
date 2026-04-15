@@ -45,7 +45,6 @@ export function useSpeechRecognition(
     recognition.lang = 'en-US';
     recognition.interimResults = true; // enable partial results
     recognition.maxAlternatives = 5; // get multiple guesses
-    recognition.continuous = true; // keep listening longer
 
     recognition.onresult = (event: SpeechRecognitionEvent) => {
       const result = event.results[event.results.length - 1];

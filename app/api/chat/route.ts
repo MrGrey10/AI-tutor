@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import type { Message } from '@/types/chat';
-import { getGroqClient, createChatCompletion } from '@/netlify/functions/chat';
+import { getGroqClient, createChatCompletion } from '@/lib/utils';
 
 export async function POST(req: NextRequest) {
   try {

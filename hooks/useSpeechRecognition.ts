@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from 'react';
 
 interface UseSpeechRecognitionResult {
-  isSupported: boolean;
+	isSupported: boolean;
   startListening: () => void;
   stopListening: () => void;
 }
@@ -20,7 +20,7 @@ function getSpeechRecognitionApi(): (new () => SpeechRecognition) | null {
 
 export function useSpeechRecognition(
   onResult: (transcript: string) => void,
-	isListening
+	isListening: boolean
 ): UseSpeechRecognitionResult {
   const [isSupported, setIsSupported] = useState(false);
   const recognitionRef = useRef<SpeechRecognition | null>(null);

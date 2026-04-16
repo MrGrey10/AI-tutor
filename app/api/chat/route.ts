@@ -14,7 +14,8 @@ export async function POST(req: NextRequest) {
       createChatCompletion(messages, userText)
     );
 
-    const reply = completion.choices[0]?.message?.content ?? '';
+		// @ts-ignore
+    const reply = completion?.choices[0]?.message?.content ?? '';
     return NextResponse.json({ reply });
   } catch (err) {
     console.error('[chat] Groq request failed:', err);

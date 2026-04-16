@@ -27,6 +27,12 @@ export function ChatScreen({ initialMessage, onEndSession }: ChatScreenProps) {
 
   // Speak the initial topic message once on mount
   useEffect(() => {
+		 if (typeof window !== 'undefined' && window.speechSynthesis) {
+			const synth = window.speechSynthesis;
+			synth.cancel();
+			const voices = synth.getVoices();
+		 }
+
     if (initialMessage) speak(initialMessage);
   }, []);
 
@@ -117,7 +123,7 @@ export function ChatScreen({ initialMessage, onEndSession }: ChatScreenProps) {
         <div ref={bottomRef} />
       </div>
 
-      <div className='m-[20px] w-full max-w-[620px] m-auto flex flex-col gap-3'>
+      <div className='p-[20px] w-full max-w-[620px] m-auto flex flex-col gap-3'>
         <textarea
           name='user text'
           placeholder='Type your message...'

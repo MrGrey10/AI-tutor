@@ -50,9 +50,9 @@ describe('MicButton — mobile (maxTouchPoints = 1)', () => {
     })
   })
 
-  it('shows "Hold to speak" when not listening', () => {
+  it('shows "Hold" when not listening', () => {
     render(<MicButton isListening={false} onStart={vi.fn()} onStop={vi.fn()} />)
-    expect(screen.getByText(/hold to speak/i)).toBeInTheDocument()
+    expect(screen.getByText(/hold/i)).toBeInTheDocument()
   })
 
   it('calls onStart on pointerDown', () => {

@@ -1,4 +1,4 @@
-import { getGroqClient, createChatCompletion } from '@/lib/utils';
+import { getGroqClient, createChatCompletion } from '../../lib/utils.js';
 
 export async function handler(event) {
   try {

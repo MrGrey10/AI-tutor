@@ -47,7 +47,7 @@ export function useSpeechRecognition(
 
     recognition.onresult = (event: SpeechRecognitionEvent) => {
       const result = event.results[event.results.length - 1];
-      if (!result.isFinal || isListening) return;
+      if (!result.isFinal) return;
 
       let best = '';
       let maxConfidence = 0;

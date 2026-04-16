@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import type { Message } from '@/types/chat';
 import { useSpeechRecognition } from '@/hooks/useSpeechRecognition';
-import { speak } from '@/lib/tts';
+import { speak, unlockAudio } from '@/lib/tts';
 import { MicButton } from './MicButton';
 import { ChatBubble } from './ChatBubble';
 import { BrowserWarning } from './BrowserWarning';
@@ -82,6 +82,7 @@ export function ChatScreen({ initialMessage, onEndSession }: ChatScreenProps) {
   const { isSupported, startListening, stopListening } = useSpeechRecognition(handleTranscript, isListening);
 
   const handleStartListening = useCallback(() => {
+    unlockAudio(); // must be called from user gesture — unlocks TTS on mobile
     setIsListening(true);
     startListening();
   }, []);

@@ -1,3 +1,5 @@
+let audioUnlocked = false;
+let pendingText: string | null = null;
 let iosResumeTimer: ReturnType<typeof setInterval> | null = null;
 
 function pickVoice(voices: SpeechSynthesisVoice[]): SpeechSynthesisVoice | null {
@@ -18,7 +20,6 @@ function doSpeak(text: string, synth: SpeechSynthesis): void {
   utterance.rate = 0.95;
   utterance.pitch = 1;
 
-  // iOS Safari pauses speechSynthesis after ~15s — keep it alive
   if (iosResumeTimer) clearInterval(iosResumeTimer);
   iosResumeTimer = setInterval(() => {
     if (!synth.speaking) {
@@ -40,22 +41,49 @@ function doSpeak(text: string, synth: SpeechSynthesis): void {
   synth.speak(utterance);
 }
 
+function withVoices(synth: SpeechSynthesis, cb: () => void): void {
+  if (synth.getVoices().length > 0) {
+    cb();
+  } else {
+    synth.addEventListener('voiceschanged', cb, { once: true });
+  }
+}
+
+// Must be called from a direct user gesture (button click/touch)
+export function unlockAudio(): void {
+  if (typeof window === 'undefined' || !window.speechSynthesis || audioUnlocked) return;
+
+  const synth = window.speechSynthesis;
+  const silent = new SpeechSynthesisUtterance(' ');
+  silent.volume = 0;
+  silent.onend = () => {
+    audioUnlocked = true;
+    if (pendingText) {
+      const text = pendingText;
+      pendingText = null;
+      withVoices(synth, () => doSpeak(text, synth));
+    }
+  };
+  synth.speak(silent);
+}
+
 export function speak(text: string): void {
   if (typeof window === 'undefined' || !window.speechSynthesis) return;
 
   const synth = window.speechSynthesis;
-  const voices = synth.getVoices();
 
-  if (voices.length > 0) {
-    doSpeak(text, synth);
-  } else {
-    // Mobile browsers load voices async
-    synth.addEventListener('voiceschanged', () => doSpeak(text, synth), { once: true });
+  if (!audioUnlocked) {
+    // Queue — will play once user unlocks via unlockAudio()
+    pendingText = text;
+    return;
   }
+
+  withVoices(synth, () => doSpeak(text, synth));
 }
 
 export function stopSpeaking(): void {
   if (typeof window === 'undefined' || !window.speechSynthesis) return;
+  pendingText = null;
   if (iosResumeTimer) {
     clearInterval(iosResumeTimer);
     iosResumeTimer = null;

@@ -24,6 +24,9 @@ export function useSpeechRecognition(
 ): UseSpeechRecognitionResult {
   const [isSupported, setIsSupported] = useState(false);
   const recognitionRef = useRef<SpeechRecognition | null>(null);
+  const finalTranscriptRef = useRef<string>('');
+  const interimTranscriptRef = useRef<string>('');
+  const deliveredRef = useRef<boolean>(false);
 
   useEffect(() => {
     const Api = getSpeechRecognitionApi();
@@ -32,43 +35,92 @@ export function useSpeechRecognition(
 
   useEffect(() => {
     return () => {
-      recognitionRef.current?.stop();
+      try {
+        recognitionRef.current?.abort();
+      } catch {}
     };
   }, []);
+
+  const deliver = () => {
+    if (deliveredRef.current) return;
+    const text = (finalTranscriptRef.current || interimTranscriptRef.current).trim();
+    if (text) {
+      deliveredRef.current = true;
+      onResult(text);
+    }
+  };
 
   const startListening = () => {
     const Api = getSpeechRecognitionApi();
     if (!Api) return;
 
+    // Ensure any previous session is gone
+    try {
+      recognitionRef.current?.abort();
+    } catch {}
+
+    finalTranscriptRef.current = '';
+    interimTranscriptRef.current = '';
+    deliveredRef.current = false;
+
     const recognition = new Api();
     recognition.lang = 'en-US';
-    recognition.interimResults = true; // enable partial results
-    recognition.maxAlternatives = 5; // get multiple guesses
+    recognition.interimResults = true;
+    recognition.continuous = true;
+    recognition.maxAlternatives = 5;
 
     recognition.onresult = (event: SpeechRecognitionEvent) => {
-      const result = event.results[event.results.length - 1];
-      if (!result.isFinal) return;
-
-      let best = '';
-      let maxConfidence = 0;
-
-      for (let i = 0; i < result.length; i++) {
-        const alt = result[i];
-        if (alt.confidence > maxConfidence) {
-          maxConfidence = alt.confidence;
-          best = alt.transcript;
+      let interim = '';
+      for (let i = event.resultIndex; i < event.results.length; i++) {
+        const result = event.results[i];
+        let best = result[0]?.transcript ?? '';
+        let maxConfidence = result[0]?.confidence ?? 0;
+        for (let j = 1; j < result.length; j++) {
+          const alt = result[j];
+          if (alt.confidence > maxConfidence) {
+            maxConfidence = alt.confidence;
+            best = alt.transcript;
+          }
+        }
+        if (result.isFinal) {
+          finalTranscriptRef.current += best + ' ';
+        } else {
+          interim += best + ' ';
         }
       }
+      interimTranscriptRef.current = interim;
+    };
 
-      onResult(best);
+    recognition.onerror = (event: SpeechRecognitionErrorEvent) => {
+      // no-speech / aborted are normal — still try to deliver what we have
+      if (event.error !== 'no-speech' && event.error !== 'aborted') {
+        console.warn('SpeechRecognition error:', event.error);
+      }
+    };
+
+    recognition.onend = () => {
+      deliver();
+      recognitionRef.current = null;
     };
 
     recognitionRef.current = recognition;
-    recognition.start();
+    try {
+      recognition.start();
+    } catch (err) {
+      console.warn('SpeechRecognition start failed:', err);
+    }
   };
 
   const stopListening = () => {
-    recognitionRef.current?.stop();
+    const rec = recognitionRef.current;
+    if (!rec) return;
+    // stop() flushes remaining results via onend; fall back to deliver after timeout
+    try {
+      rec.stop();
+    } catch {}
+    setTimeout(() => {
+      if (!deliveredRef.current) deliver();
+    }, 400);
   };
 
   return { isSupported, startListening, stopListening };

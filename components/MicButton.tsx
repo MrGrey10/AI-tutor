@@ -27,7 +27,7 @@ export function MicButton({ onStart, onStop, disabled, isListening }: MicButtonP
         disabled={disabled}
         onPointerDown={disabled ? undefined : onStart}
         onPointerUp={disabled ? undefined : onStop}
-        onPointerLeave={disabled ? undefined : onStop}
+        onPointerCancel={disabled ? undefined : onStop}
         className={`${baseClass} ${isListening ? listeningClass : idleClass}`}
         aria-label={isListening ? 'Release' : 'Hold'}
         aria-pressed={isListening}>

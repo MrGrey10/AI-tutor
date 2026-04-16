@@ -31,6 +31,9 @@ export function ChatScreen({ initialMessage, onEndSession }: ChatScreenProps) {
 			const synth = window.speechSynthesis;
 			synth.cancel();
 			const voices = synth.getVoices();
+			setTimeout(() => {
+				alert(speechSynthesis.getVoices().length)
+			}, 2000)
 		 }
 
     if (initialMessage) speak(initialMessage);

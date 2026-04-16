@@ -20,7 +20,7 @@ function getSpeechRecognitionApi(): (new () => SpeechRecognition) | null {
 
 export function useSpeechRecognition(
   onResult: (transcript: string) => void,
-	isListening: boolean
+  _isListening?: boolean
 ): UseSpeechRecognitionResult {
   const [isSupported, setIsSupported] = useState(false);
   const recognitionRef = useRef<SpeechRecognition | null>(null);

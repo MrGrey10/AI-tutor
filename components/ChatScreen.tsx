@@ -36,8 +36,7 @@ export function ChatScreen({ initialMessage, onEndSession }: ChatScreenProps) {
   }, [messages, isLoading]);
 
   const handleTranscript = async (transcript: string) => {
-		console.log('[] isListening', isListening);
-    if (isFetchingRef.current || isListening) return;
+    if (isFetchingRef.current || isListening || !transcript) return;
     isFetchingRef.current = true;
 
     const userMessage: Message = { role: 'user', content: transcript };

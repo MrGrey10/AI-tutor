@@ -8,7 +8,7 @@ function pickVoice(voices: SpeechSynthesisVoice[]): SpeechSynthesisVoice | null 
     voices.find((v) => v.name.includes('Google') && v.lang === 'en-US') ||
     voices.find((v) => v.name.includes('Samantha') && v.lang === 'en-US') ||
     voices.find((v) => v.lang === 'en-US') ||
-    null
+    voices?.[0]
   );
 }
 
@@ -19,6 +19,7 @@ function doSpeak(text: string): void {
   const voices = synth.getVoices();
   const utterance = new SpeechSynthesisUtterance(text);
   // If voices not loaded yet, browser uses default — still audible
+	alert(pickVoice(voices)?.name);
   utterance.voice = pickVoice(voices);
   utterance.lang = 'en-US';
   utterance.rate = 0.95;

@@ -30,10 +30,7 @@ export function ChatScreen({ initialMessage, onEndSession }: ChatScreenProps) {
 		 if (typeof window !== 'undefined' && window.speechSynthesis) {
 			const synth = window.speechSynthesis;
 			synth.cancel();
-			const voices = synth.getVoices();
-			setTimeout(() => {
-				alert(speechSynthesis.getVoices().length)
-			}, 2000)
+			synth.getVoices();
 		 }
 
     if (initialMessage) speak(initialMessage);

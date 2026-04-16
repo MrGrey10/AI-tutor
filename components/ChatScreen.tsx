@@ -1,12 +1,13 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import type { Message } from '@/types/chat';
 import { useSpeechRecognition } from '@/hooks/useSpeechRecognition';
 import { speak } from '@/lib/tts';
 import { MicButton } from './MicButton';
 import { ChatBubble } from './ChatBubble';
 import { BrowserWarning } from './BrowserWarning';
+import { API_BASE } from '@/consts';
 
 interface ChatScreenProps {
   initialMessage?: string;
@@ -22,6 +23,7 @@ export function ChatScreen({ initialMessage, onEndSession }: ChatScreenProps) {
   const [isLoading, setIsLoading] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
   const isFetchingRef = useRef(false);
+  const [isListening, setIsListening] = useState(false);
 
   // Speak the initial topic message once on mount
   useEffect(() => {
@@ -34,7 +36,8 @@ export function ChatScreen({ initialMessage, onEndSession }: ChatScreenProps) {
   }, [messages, isLoading]);
 
   const handleTranscript = async (transcript: string) => {
-    if (isFetchingRef.current) return;
+		console.log('[] isListening', isListening);
+    if (isFetchingRef.current || isListening) return;
     isFetchingRef.current = true;
 
     const userMessage: Message = { role: 'user', content: transcript };
@@ -42,7 +45,7 @@ export function ChatScreen({ initialMessage, onEndSession }: ChatScreenProps) {
     setIsLoading(true);
 
     try {
-      const res = await fetch('/.netlify/functions/chat', {
+      const res = await fetch(`${API_BASE}/chat`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ messages, userText: transcript })
@@ -50,6 +53,7 @@ export function ChatScreen({ initialMessage, onEndSession }: ChatScreenProps) {
       const { reply } = await res.json();
       const tutorMessage: Message = { role: 'assistant', content: reply };
       setMessages((prev) => [...prev, tutorMessage]);
+      console.log('[ChatScreen] Received reply:', reply);
       speak(reply);
     } catch {
       setMessages((prev) => [
@@ -70,8 +74,17 @@ export function ChatScreen({ initialMessage, onEndSession }: ChatScreenProps) {
     }
   }, [pushText, text]);
 
-  const { isListening, isSupported, startListening, stopListening } =
-    useSpeechRecognition(handleTranscript);
+  const { isSupported, startListening, stopListening } = useSpeechRecognition(handleTranscript, isListening);
+
+  const handleStartListening = useCallback(() => {
+    setIsListening(true);
+    startListening();
+  }, []);
+
+  const handleStopListening = useCallback(() => {
+    setIsListening(false);
+    stopListening();
+  }, []);
 
   return (
     <div className='min-h-screen flex flex-col bg-white'>
@@ -129,10 +142,10 @@ export function ChatScreen({ initialMessage, onEndSession }: ChatScreenProps) {
       {/* Controls */}
       <div className='flex justify-center items-center py-6 border-t border-gray-100'>
         <MicButton
-          isListening={isListening}
-          onStart={startListening}
-          onStop={stopListening}
+          onStart={handleStartListening}
+          onStop={handleStopListening}
           disabled={isLoading || !isSupported}
+          isListening={isListening}
         />
       </div>
     </div>

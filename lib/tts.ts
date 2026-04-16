@@ -8,9 +8,7 @@ export function speak(text: string): void {
 
   // Try to find a high-quality voice
   const voice =
-    voices.find((v) => v.name.includes('Google')) ||
-    voices.find((v) => v.name.includes('Samantha')) || // Safari
-    voices.find((v) => v.lang === 'en-US');
+    voices.find((v) => v.name.includes('Google') && v.lang === 'en-US')
 
   const utterance = new SpeechSynthesisUtterance(text);
   utterance.voice = voice || null;

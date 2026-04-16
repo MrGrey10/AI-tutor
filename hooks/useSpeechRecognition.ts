@@ -3,7 +3,6 @@
 import { useState, useRef, useEffect } from 'react';
 
 interface UseSpeechRecognitionResult {
-  isListening: boolean;
   isSupported: boolean;
   startListening: () => void;
   stopListening: () => void;
@@ -20,9 +19,9 @@ function getSpeechRecognitionApi(): (new () => SpeechRecognition) | null {
 }
 
 export function useSpeechRecognition(
-  onResult: (transcript: string) => void
+  onResult: (transcript: string) => void,
+	isListening
 ): UseSpeechRecognitionResult {
-  const [isListening, setIsListening] = useState(false);
   const [isSupported, setIsSupported] = useState(false);
   const recognitionRef = useRef<SpeechRecognition | null>(null);
 
@@ -48,6 +47,7 @@ export function useSpeechRecognition(
 
     recognition.onresult = (event: SpeechRecognitionEvent) => {
       const result = event.results[event.results.length - 1];
+      if (!result.isFinal || isListening) return;
 
       let best = '';
       let maxConfidence = 0;
@@ -63,23 +63,13 @@ export function useSpeechRecognition(
       onResult(best);
     };
 
-    recognition.onend = () => {
-      setIsListening(false);
-    };
-
-    recognition.onerror = () => {
-      setIsListening(false);
-    };
-
     recognitionRef.current = recognition;
     recognition.start();
-    setIsListening(true);
   };
 
   const stopListening = () => {
     recognitionRef.current?.stop();
-    setIsListening(false);
   };
 
-  return { isListening, isSupported, startListening, stopListening };
+  return { isSupported, startListening, stopListening };
 }

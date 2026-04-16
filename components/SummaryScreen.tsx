@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import type { Message } from '@/types/chat';
+import { API_BASE } from '@/consts';
 
 const SUMMARY_PROMPT =
   'Please summarize all the grammar and vocabulary mistakes I made in this session with their corrections. Format as a numbered list. If there were no mistakes, say so.';
@@ -18,7 +19,7 @@ export function SummaryScreen({ messages, onNewSession }: SummaryScreenProps) {
   useEffect(() => {
     const controller = new AbortController();
 
-    fetch('/.netlify/functions/chat', {
+    fetch(`${API_BASE}/chat`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ messages, userText: SUMMARY_PROMPT }),

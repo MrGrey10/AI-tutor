@@ -1,4 +1,5 @@
-let audioUnlocked = false;
+const isIOS = typeof navigator !== 'undefined' && /iPad|iPhone|iPod/.test(navigator.userAgent);
+let audioUnlocked = !isIOS;
 let pendingText: string | null = null;
 let iosResumeTimer: ReturnType<typeof setInterval> | null = null;
 
@@ -11,11 +12,14 @@ function pickVoice(voices: SpeechSynthesisVoice[]): SpeechSynthesisVoice | null 
   );
 }
 
-function doSpeak(text: string, synth: SpeechSynthesis): void {
+function doSpeak(text: string): void {
+  const synth = window.speechSynthesis;
   synth.cancel();
 
+  const voices = synth.getVoices();
   const utterance = new SpeechSynthesisUtterance(text);
-  utterance.voice = pickVoice(synth.getVoices());
+  // If voices not loaded yet, browser uses default — still audible
+  utterance.voice = pickVoice(voices);
   utterance.lang = 'en-US';
   utterance.rate = 0.95;
   utterance.pitch = 1;
@@ -41,44 +45,31 @@ function doSpeak(text: string, synth: SpeechSynthesis): void {
   synth.speak(utterance);
 }
 
-function withVoices(synth: SpeechSynthesis, cb: () => void): void {
-  if (synth.getVoices().length > 0) {
-    cb();
-  } else {
-    synth.addEventListener('voiceschanged', cb, { once: true });
-  }
-}
-
-// Must be called from a direct user gesture (button click/touch)
+// Call this directly from a user gesture (button tap/click) — unlocks audio on mobile
 export function unlockAudio(): void {
-  if (typeof window === 'undefined' || !window.speechSynthesis || audioUnlocked) return;
+  if (typeof window === 'undefined' || !window.speechSynthesis) return;
 
-  const synth = window.speechSynthesis;
-  const silent = new SpeechSynthesisUtterance(' ');
-  silent.volume = 0;
-  silent.onend = () => {
-    audioUnlocked = true;
-    if (pendingText) {
-      const text = pendingText;
-      pendingText = null;
-      withVoices(synth, () => doSpeak(text, synth));
-    }
-  };
-  synth.speak(silent);
+  // Mark unlocked synchronously so speak() works from async contexts afterward
+  audioUnlocked = true;
+
+  // If speak() was already called (e.g. initialMessage on mount), play it now
+  // while we're still inside the gesture callstack
+  if (pendingText) {
+    const text = pendingText;
+    pendingText = null;
+    doSpeak(text);
+  }
 }
 
 export function speak(text: string): void {
   if (typeof window === 'undefined' || !window.speechSynthesis) return;
 
-  const synth = window.speechSynthesis;
-
   if (!audioUnlocked) {
-    // Queue — will play once user unlocks via unlockAudio()
-    pendingText = text;
+    pendingText = text; // hold until user taps mic
     return;
   }
 
-  withVoices(synth, () => doSpeak(text, synth));
+  doSpeak(text);
 }
 
 export function stopSpeaking(): void {

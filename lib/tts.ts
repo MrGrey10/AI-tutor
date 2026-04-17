@@ -45,25 +45,25 @@ function speakNow(text: string, voices: SpeechSynthesisVoice[]): void {
   utterance.rate = 0.95;
   utterance.pitch = 1;
 
-  if (isDesktopChrome) {
-    if (desktopChromeResumeTimer) clearInterval(desktopChromeResumeTimer);
-    desktopChromeResumeTimer = setInterval(() => {
-      if (!synth.speaking) {
-        clearInterval(desktopChromeResumeTimer!);
-        desktopChromeResumeTimer = null;
-        return;
-      }
-      synth.pause();
-      synth.resume();
-    }, 10000);
+  // if (isDesktopChrome) {
+  //   if (desktopChromeResumeTimer) clearInterval(desktopChromeResumeTimer);
+  //   desktopChromeResumeTimer = setInterval(() => {
+  //     if (!synth.speaking) {
+  //       clearInterval(desktopChromeResumeTimer!);
+  //       desktopChromeResumeTimer = null;
+  //       return;
+  //     }
+  //     synth.pause();
+  //     synth.resume();
+  //   }, 10000);
 
-    utterance.onend = () => {
-      if (desktopChromeResumeTimer) {
-        clearInterval(desktopChromeResumeTimer);
-        desktopChromeResumeTimer = null;
-      }
-    };
-  }
+  //   utterance.onend = () => {
+  //     if (desktopChromeResumeTimer) {
+  //       clearInterval(desktopChromeResumeTimer);
+  //       desktopChromeResumeTimer = null;
+  //     }
+  //   };
+  // }
 
   synth.speak(utterance);
 }

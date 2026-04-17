@@ -42,7 +42,10 @@ export function ChatScreen({ initialMessage, onEndSession }: ChatScreenProps) {
   }, [messages, isLoading]);
 
   const handleTranscript = async (transcript: string) => {
-    if (isFetchingRef.current || isListening || !transcript) return;
+    if (isFetchingRef.current || isListening || !transcript) {
+			alert('Error: isFetchingRef.current || isListening || !transcript');
+			return;
+		}
     isFetchingRef.current = true;
 
     const userMessage: Message = { role: 'user', content: transcript };
@@ -60,7 +63,8 @@ export function ChatScreen({ initialMessage, onEndSession }: ChatScreenProps) {
       setMessages((prev) => [...prev, tutorMessage]);
       console.log('[ChatScreen] Received reply:', reply);
       speak(reply);
-    } catch {
+    } catch (err) {
+			alert('Error: ' + err);
       setMessages((prev) => [
         ...prev,
         { role: 'assistant', content: 'Sorry, something went wrong. Please try again.' }
@@ -114,7 +118,7 @@ export function ChatScreen({ initialMessage, onEndSession }: ChatScreenProps) {
       {/* Messages */}
       <div className='flex-1 overflow-y-auto px-4 py-4'>
         {messages?.map((msg, i) => (
-          <ChatBubble key={i} message={msg} speak={() => speak(msg.content)} />
+          <ChatBubble key={i} message={msg} speak={() => { unlockAudio(); speak(msg.content); }} />
         ))}
         {isLoading && (
           <div className='flex justify-start mb-3'>

@@ -51,7 +51,6 @@ function speakNow(text: string, voices: SpeechSynthesisVoice[]): void {
       if (!synth.speaking) {
         clearInterval(desktopChromeResumeTimer!);
         desktopChromeResumeTimer = null;
-        alert('Error: synth.speaking is false');
         return;
       }
       synth.pause();
@@ -83,7 +82,6 @@ function doSpeak(text: string): void {
       speakNow(text, loadVoices());
     }, 500);
 
-    alert('Error: voices not loaded');
     return;
   }
   speakNow(text, voices);
@@ -92,7 +90,6 @@ function doSpeak(text: string): void {
 // Call this directly from a user gesture (button tap/click) — unlocks audio on mobile
 export function unlockAudio(): void {
   if (typeof window === 'undefined' || !window.speechSynthesis) {
-		alert('Error: speechSynthesis is not supported in your browser');
 		return;
 	}
   if (audioUnlocked) {
@@ -101,7 +98,6 @@ export function unlockAudio(): void {
       pendingText = null;
       doSpeak(text);
     }
-		alert('Error: audioUnlocked is true');
     return;
   }
 
@@ -128,12 +124,10 @@ export function unlockAudio(): void {
 
 export function speak(text: string): void {
   if (typeof window === 'undefined' || !window.speechSynthesis) {
-    alert('Error: speechSynthesis is not supported in your browser');
     return;
   }
 
   if (!audioUnlocked && isMobile) {
-    alert('Error: audio is not unlocked');
     pendingText = text;
     return;
   }

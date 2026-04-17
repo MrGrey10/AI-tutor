@@ -43,7 +43,6 @@ export function ChatScreen({ initialMessage, onEndSession }: ChatScreenProps) {
 
   const handleTranscript = async (transcript: string) => {
     if (isFetchingRef.current || isListening || !transcript) {
-			alert('Error: isFetchingRef.current || isListening || !transcript');
 			return;
 		}
     isFetchingRef.current = true;
@@ -64,7 +63,6 @@ export function ChatScreen({ initialMessage, onEndSession }: ChatScreenProps) {
       console.log('[ChatScreen] Received reply:', reply);
       speak(reply);
     } catch (err) {
-			alert('Error: ' + err);
       setMessages((prev) => [
         ...prev,
         { role: 'assistant', content: 'Sorry, something went wrong. Please try again.' }

@@ -114,7 +114,7 @@ export function ChatScreen({ initialMessage, onEndSession }: ChatScreenProps) {
       {/* Messages */}
       <div className='flex-1 overflow-y-auto px-4 py-4'>
         {messages?.map((msg, i) => (
-          <ChatBubble key={i} message={msg} />
+          <ChatBubble key={i} message={msg} speak={() => speak(msg.content)} />
         ))}
         {isLoading && (
           <div className='flex justify-start mb-3'>

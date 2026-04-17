@@ -10,12 +10,17 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'userText is required' }, { status: 400 });
     }
 
+		console.log('[] messages', messages)
+		console.log('[] userText', userText)
+
     const completion = await getGroqClient().chat.completions.create(
       createChatCompletion(messages, userText)
     );
+		console.log('[] completion', completion)
 
 		// @ts-ignore
     const reply = completion?.choices[0]?.message?.content ?? '';
+		console.log('[] reply', reply)
     return NextResponse.json({ reply });
   } catch (err) {
     console.error('[chat] Groq request failed:', err);
